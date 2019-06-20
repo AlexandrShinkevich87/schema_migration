@@ -7,3 +7,5 @@ databaseChangeLog:
       file: db/changelog/migrations/03-define-initial-tag.yaml
   - include:
       file: db/changelog/migrations/04-add-address-table-with-filling.yaml
+  - include:
+      file: db/changelog/migrations/05-add-test-table.yaml

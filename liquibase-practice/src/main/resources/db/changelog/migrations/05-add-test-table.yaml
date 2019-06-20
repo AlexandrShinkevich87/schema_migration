@@ -1,0 +1,24 @@
+databaseChangeLog:
+  - changeSet:
+      id: 05-add-test-table
+      author: Alexandr_Shinkevich
+      changes:
+        - tagDatabase:
+            tag: 05-add-test-table
+        - createTable:
+            tableName: test
+            columns:
+              - column:
+                  name: id
+                  type: serial
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: first_name
+                  type: text
+    rollback:
+      rollback:
+        changes:
+          - dropTable:
+              tableName: test
