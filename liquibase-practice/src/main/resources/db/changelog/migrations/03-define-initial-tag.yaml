@@ -1,0 +1,7 @@
+databaseChangeLog:
+  - changeSet:
+     id: 02-define-initial-tag
+     author: Alexandr_Shinkevich
+     changes:
+       - tagDatabase:
+           tag: 02-extend-personal_data-table

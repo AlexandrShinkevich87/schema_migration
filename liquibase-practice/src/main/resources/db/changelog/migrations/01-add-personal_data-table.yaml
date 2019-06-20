@@ -1,0 +1,33 @@
+databaseChangeLog:
+  - changeSet:
+      id: 01-add-personal_data-table
+      author: Alexandr_Shinkevich
+      changes:
+        - createTable:
+            tableName: personal_data
+            columns:
+              - column:
+                  name: id
+                  type: serial
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: first_name
+                  type: text
+              - column:
+                  name: surname
+                  type: text
+              - column:
+                  name: gender
+                  type: text
+              - column:
+                  name: nationality
+                  type: text
+              - column:
+                  name: birth_date
+                  type: date
+        - alterSequence:
+            sequenceName: personal_data_id_seq
+            incrementBy: 100
+            startValue: 1

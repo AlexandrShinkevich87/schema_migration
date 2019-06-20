@@ -1,0 +1,41 @@
+databaseChangeLog:
+  - changeSet:
+      id: 02-extend-personal_data-table
+      author: Alexandr_Shinkevich
+      changes:
+        - addColumn:
+            tableName: personal_data
+            columns:
+              - column:
+                  name: street_name
+                  type: text
+              - column:
+                  name: house_number
+                  type: text
+              - column:
+                  name: box_number
+                  type: text
+              - column:
+                  name: suffix
+                  type: text
+              - column:
+                  name: postal_code
+                  type: text
+              - column:
+                  name: municipality
+                  type: text
+              - column:
+                  name: country
+                  type: text
+              - column:
+                  name: email
+                  type: text
+              - column:
+                  name: mobile_number
+                  type: text
+              - column:
+                  name: office_number
+                  type: text
+              - column:
+                  name: fax_number
+                  type: text

@@ -1,0 +1,99 @@
+import org.yaml.snakeyaml.Yaml
+
+buildscript {
+    repositories {
+        maven { url 'http://repo.spring.io/plugins-release' }
+        mavenCentral()
+    }
+    dependencies {
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+        classpath("gradle.plugin.com.palantir.gradle.docker:gradle-docker:0.17.2")
+//        classpath("org.unbroken-dome.gradle-plugins:gradle-testsets-plugin:2.1.1")
+        classpath("io.spring.gradle:dependency-management-plugin:1.0.3.RELEASE")
+        classpath("org.yaml:snakeyaml:1.19")
+    }
+}
+
+plugins {
+    id "java"
+//    id "groovy"
+//    id "jacoco"
+
+//    id "org.sonarqube" version "2.6.1"
+//    id "com.jfrog.artifactory" version "4.6.2"
+    id "org.liquibase.gradle" version "2.0.1"
+}
+
+apply plugin: "org.springframework.boot"
+apply plugin: "io.spring.dependency-management"
+apply plugin: "com.palantir.docker"
+//apply plugin: "org.unbroken-dome.test-sets"
+
+sourceCompatibility = 9
+
+repositories {
+    maven {
+        url "https://dela.jfrog.io/dela/gradle-dev"
+        credentials {
+            username = "${artifactory_user}"
+            password = "${artifactory_password}"
+        }
+    }
+    mavenLocal()
+}
+
+dependencies {
+    compile("org.springframework.boot:spring-boot-starter-actuator")
+    compile("org.springframework.boot:spring-boot-starter-data-jpa")
+    compile("org.springframework.boot:spring-boot-starter-validation")
+    compile("org.springframework.boot:spring-boot-starter-web")
+
+    //code generators
+    compileOnly("org.projectlombok:lombok:${lombokVersion}")
+    annotationProcessor("org.projectlombok:lombok:${lombokVersion}")
+    testAnnotationProcessor("org.projectlombok:lombok:${lombokVersion}")
+
+    //database
+    runtime("org.postgresql:postgresql:${postgresqlDriverVersion}")
+    compile("org.liquibase:liquibase-core:${liquibaseVersion}")
+
+    //common utilities
+    compile("org.apache.commons:commons-lang3:3.9")
+    compile("org.apache.commons:commons-collections4:4.3")
+
+    //liquibase on it's own
+    liquibaseRuntime("org.liquibase:liquibase-core:${liquibaseVersion}")
+    liquibaseRuntime("org.liquibase:liquibase-groovy-dsl:2.0.2")
+    liquibaseRuntime("org.postgresql:postgresql:${postgresqlDriverVersion}")
+}
+
+docker {
+    name "liquibase-practice"
+
+    dockerfile file('docker/Dockerfile')
+    files jar.archivePath
+    buildArgs(['JAR_FILE': "${jar.archiveName}"])
+}
+
+liquibase {
+    def application = new Yaml().load(new File("$projectDir/src/main/resources/application.yml").newInputStream())
+
+    def dbUrl = findProperty("liquibaseDbUrl") ?: application.spring.datasource.liquibase.url
+    def dbUsername = findProperty("liquibaseDbUsername") ?: application.spring.datasource.liquibase.username
+    def dbPassword = findProperty("liquibaseDbPassword") ?: application.spring.datasource.liquibase.password
+    def dbSchema = findProperty("liquibaseDbSchema") ?: application.spring.datasource.liquibase.schema
+
+    // We need to put schema to url because liquibase does not apply schema name for native sql
+    // related issue: https://liquibase.jira.com/browse/CORE-3382
+    def dbUrlWithSchema = "${dbUrl}&currentSchema=${dbSchema}"
+
+    activities {
+        main {
+            classpath "src/main/resources"
+            changeLogFile "db/changelog/db.changelog-master.yaml"
+            url dbUrlWithSchema
+            username dbUsername
+            password dbPassword
+        }
+    }
+}

@@ -1,0 +1,140 @@
+databaseChangeLog:
+  - changeSet:
+      id: 04-add-address-table-with-filling
+      author: Alexandr_Shinkevich
+      changes:
+        - tagDatabase:
+            tag: 04-add-address-table-with-filling
+        - createTable:
+            tableName: address
+            columns:
+              - column:
+                  name: id
+                  type: serial
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+                    primaryKeyName: address_pkey
+              - column:
+                  name: personal_data_id
+                  type: integer
+              - column:
+                  name: type
+                  type: text
+                  constraints:
+                    nullable: false
+              - column:
+                  name: street_name
+                  type: text
+              - column:
+                  name: house_number
+                  type: text
+              - column:
+                  name: box_number
+                  type: text
+              - column:
+                  name: suffix
+                  type: text
+              - column:
+                  name: postal_code
+                  type: text
+              - column:
+                  name: municipality
+                  type: text
+              - column:
+                  name: country
+                  type: text
+        - alterSequence:
+            incrementBy: 100
+            sequenceName: address_id_seq
+        - sql:
+            sql: |-
+              INSERT INTO address (personal_data_id,
+                street_name, house_number, box_number, suffix, postal_code, municipality, country, type)
+              SELECT id,
+              	street_name, house_number, box_number, suffix, postal_code, municipality, country, 	'RESIDENTIAL' as type
+              FROM personal_data
+              WHERE
+                street_name is not null
+                or house_number is not null
+                or box_number is not null
+                or suffix is not null
+                or postal_code is not null
+                or municipality is not null
+                or country is not null
+        - dropColumn:
+            columnName: street_name
+            tableName: personal_data
+        - dropColumn:
+            columnName: house_number
+            tableName: personal_data
+        - dropColumn:
+            columnName: box_number
+            tableName: personal_data
+        - dropColumn:
+            columnName: suffix
+            tableName: personal_data
+        - dropColumn:
+            columnName: postal_code
+            tableName: personal_data
+        - dropColumn:
+            columnName: municipality
+            tableName: personal_data
+        - dropColumn:
+            columnName: country
+            tableName: personal_data
+        - addForeignKeyConstraint:
+            baseColumnNames: personal_data_id
+            baseTableName: address
+            constraintName: fk_address_personal_data
+            referencedColumnNames: id
+            referencedTableName: personal_data
+        - addUniqueConstraint:
+            columnNames: personal_data_id, type
+            constraintName: uk_address_personal_data_type
+            tableName: address
+      rollback:
+        - addColumn:
+            tableName: personal_data
+            columns:
+              - column:
+                  name: street_name
+                  type: text
+              - column:
+                  name: house_number
+                  type: text
+              - column:
+                  name: box_number
+                  type: text
+              - column:
+                  name: suffix
+                  type: text
+              - column:
+                  name: postal_code
+                  type: text
+              - column:
+                  name: municipality
+                  type: text
+              - column:
+                  name: country
+                  type: text
+        - sql:
+            sql: |-
+              UPDATE personal_data
+              SET
+                street_name         = address.street_name,
+                house_number        = address.house_number,
+                box_number          = address.box_number,
+                suffix              = address.suffix,
+                postal_code         = address.postal_code,
+                municipality        = address.municipality,
+                country             = address.country
+              FROM (
+                    SELECT a.personal_data_id,
+                      a.street_name, a.house_number, a.box_number, a.suffix, a.postal_code, a.municipality, a.country
+                    FROM address a JOIN personal_data u ON a.personal_data_id = u.id
+              ) address
+              WHERE personal_data.id = address.personal_data_id;
+        - dropTable:
+            tableName: address
+            cascadeConstraints: true

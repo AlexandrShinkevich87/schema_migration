@@ -1,0 +1,26 @@
+spring:
+  application:
+    name: User
+  jpa:
+    properties:
+      hibernate:
+        show_sql: false
+        format_sql: false
+  datasource:
+    primary:
+      url: jdbc:postgresql://localhost:5433/user_db?socketTimeout=30
+      schema: public
+      username: docker
+      password: SQL
+      poolName: primary-connection-pool
+      leakDetectionThreshold: 60000
+      maxPoolSize: 10
+    liquibase:
+      url: jdbc:postgresql://localhost:5433/user_db?socketTimeout=30
+      schema: public
+      username: docker
+      password: SQL
+      poolName: liquibase-connection-pool
+      leakDetectionThreshold: 60000
+      minIdle: 0
+      maxPoolSize: 1

@@ -1,0 +1,6 @@
+spring:
+  datasource:
+    primary:
+      url: jdbc:postgresql://user-database:5432/user_db
+    liquibase:
+      url: jdbc:postgresql://user-database:5432/user_db
