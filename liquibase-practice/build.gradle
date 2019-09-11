@@ -25,13 +25,6 @@ apply plugin: "com.palantir.docker"
 sourceCompatibility = 9
 
 repositories {
-    maven {
-        url "https://dela.jfrog.io/dela/gradle-dev"
-        credentials {
-            username = "${artifactory_user}"
-            password = "${artifactory_password}"
-        }
-    }
     mavenLocal()
 }
 
